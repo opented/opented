@@ -3,6 +3,9 @@ import os
 from itertools import count
 
 from threaded import threaded
+from common import tender_path
+
+FAILURES = 50
 
 session = requests.Session()
 
@@ -17,18 +20,10 @@ def get(uri, tab):
             allow_redirects=False,
             cookies={'lg': 'en'})
 
-def tender_path(year, num, tab):
-    hash_dir = int(str(num)[:3])
-    path = 'tenders/%s/%03d/%s/tab_%s.html' % (year, hash_dir, num, tab)
-    dirname = os.path.dirname(path)
-    if not os.path.isdir(dirname):
-        os.makedirs(dirname)
-    return path
-
 def get_entry(year, num):
     uri = 'TED:NOTICE:%s-%s:DATA:EN:HTML' % (num, year)
     print "URI", uri
-    for tab in range(0, 4):
+    for tab in range(0, 5):
         path = tender_path(year, num, tab)
         if os.path.isfile(path):
             continue
@@ -46,8 +41,13 @@ def get_entry(year, num):
     return True
 
 def all_entries(year):
+    failed = 0
     for num in count(1):
         if not get_entry(year, num):
+            failed += 1
+        else:
+            failed = 0
+        if failed > FAILURES:
             break
 
 def all_years():
