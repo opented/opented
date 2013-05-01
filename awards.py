@@ -21,19 +21,37 @@ def text_value(field, el):
     plain = text_plain(field, el)[field]
     for line in plain.split('\n'):
         lline = line.lower()
-        if lline.startswith('value '):
+        if not len(lline):
+            continue
+        elif lline.startswith('value '):
             data[cur_field] = line[6:]
+        elif lline.startswith('value: '):
+            data[cur_field] = line[7:]
+        elif lline.startswith('amount '):
+            data[cur_field] = line[7:]
+        elif lline.startswith('value of the contract: '):
+            data[cur_field] = line
+        elif lline.startswith('lowest offer '):
+            data[cur_field] = line
         elif 'vat' in lline or lline.startswith('including') or \
             lline.startswith('excluding'):
             data[cur_field + '_vat'] = line
+        elif 'contract no' in lline or 'contract number' in lline:
+            data['contract_nr'] = line
+        elif 'lot no' in lline:
+            data['lot_nr'] = line
         elif 'total final value' in lline:
             cur_field = field + '_final'
         elif 'initial estimated total value' in lline:
             cur_field = field + '_initial'
         elif 'annual or monthly' in lline:
             data[cur_field + '_term'] = line
+        elif 'number of months' in lline or 'number of years' in lline:
+            data[cur_field + '_term'] = line
         else:
             print plain.split('\n')
+    if not field in data:
+        data[field] = plain
     return data
 
 def text_addr(field, el):
@@ -113,7 +131,7 @@ def extract_awards(engine, uri, doc):
     contracts = []
     for contract in parse_awards(doc):
         contract['uri'] = uri
-        pprint(contract)
+        #pprint(contract)
         table.insert(contract)
 
 

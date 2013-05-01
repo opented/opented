@@ -88,7 +88,6 @@ def parse_tender(engine, paths):
         #parse_awards(lang_doc)
         extract_awards(engine, data['uri'], lang_doc)
         #pprint(data)
-    return
 
     # find out what this is good for :)
     if 'cpv_original_code' in data:
