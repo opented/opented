@@ -1,6 +1,7 @@
 from pprint import pprint
 from lxml import html
 from common import traverse_local, as_document
+from awards import parse_award
 
 import dataset
 
@@ -31,23 +32,6 @@ DATA_CODES = {
     'IA': ('url', 'item'),
     }
 
-MLI_FIELDS = {
-    'xxx': 'yyy'
-    }
-
-def parse_mli(mli):
-    key = None
-    keys = mli.cssselect('span.timark')
-    if len(keys):
-        key = keys.pop().text
-    text = mli.cssselect('.txtmark')
-    if len(text):
-        text = html.tostring(text.pop())
-        text, chop = text.rsplit('<', 1)
-        chop, text = text.split('>', 1)
-        text = text.replace('<br>', '\n').strip()
-    return key, text
-
 
 def parse_current_language(path):
     cl = as_document(path)
@@ -62,9 +46,7 @@ def parse_current_language(path):
     data['signature'] = signature.text
     data['identifier'] = identifier.text
 
-    #for mli in content.cssselect('.DocumentBody > .mlioccur'):
-    #    print parse_mli(mli)
-    return data
+    return cl, data
 
 def parse_data(path):
     data = {}
@@ -92,12 +74,19 @@ def parse_data(path):
     data['uri'] = 'TED:NOTICE:%s-%s:DATA:EN:HTML' % (num, year)
     return data
 
+
 def parse_tender(engine, paths):
-    data = parse_current_language(paths[0])
+    lang_doc, data = parse_current_language(paths[0])
     data.update(parse_data(paths[3]))
     if not 'uri' in data:
         pprint(data)
         return
+
+    if 'award' in data['heading'].lower():
+        print "AWARD", data['uri'], [data['heading']]
+        print paths[0]
+        parse_award(lang_doc)
+        #pprint(data)
 
     # find out what this is good for :)
     if 'cpv_original_code' in data:
@@ -109,9 +98,7 @@ def parse_tender(engine, paths):
             'code': cpv_code,
             'title': cpv_title }, ['document_uri', 'code'])
     engine['document'].upsert(data, ['uri'])
-    print data['uri']
-    #if 'award' in data['heading'].lower():
-    #    pprint(data)
+    #print data['uri']
 
 def parse(engine):
     for paths in traverse_local():
