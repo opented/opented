@@ -86,7 +86,7 @@ def parse_tender(engine, paths):
         #print "AWARD", data['uri'], [data['heading']]
         #print paths[0]
         #parse_awards(lang_doc)
-        extract_awards(data['uri'], lang_doc)
+        extract_awards(engine, data['uri'], lang_doc)
         #pprint(data)
     return
 

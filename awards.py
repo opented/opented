@@ -1,40 +1,10 @@
 from lxml import html
 from pprint import pprint
 
-LIST_FIELDS = {
-        'Publication reference:': 'publication_reference',
-        'Publication date of the procurement notice:': 'publication_date',
-        'Date of publication of the contract notice:': 'publication_date',
-        'Lot number and lot title:': 'lot_nr_title',
-        'Number and title of the lot:': 'lot_nr_title',
-        'Number and titles of the lots:': 'lot_nr_title',
-        'Contract value:': 'contract_value',
-        'Contract number and value:': 'contract_value',
-        'Date of award of the contract:': 'award_date',
-        'Date of contract award:': 'award_date',
-        'Date of contract signature:': 'award_date',
-        'Number of tenders received:': 'num_tenders_received',
-        'Overall score of chosen tender:': 'score_chosen_tender',
-        'Overall score of selected tender:': 'score_chosen_tender',
-        'Total score of the selected tender:': 'score_chosen_tender',
-        'Name and address of successful tenderer:': 'recipient',
-        'Name and address of the successful tenderer:': 'recipient',
-        'Name, address and nationality of successful tenderer:': 'recipient',
-        'DAC code:': 'dac_code',
-        'Duration of contract:': 'contract_duration',
-        'Contracting authority:': 'contracting_authority',
-        'Legal basis:': 'legal_basis',
+import dataset
 
-        'NAME AND ADDRESS OF ECONOMIC OPERATOR IN FAVOUR OF WHOM A CONTRACT AWARD DECISION HAS BEEN TAKEN': 'recipient',
-        'INFORMATION ON VALUE OF CONTRACT': 'contract_value',
-        'TOTAL FINAL VALUE OF CONTRACT(S)': 'total_value',
-        'Total final value of contract(s)': 'total_value',
-        'NAME, ADDRESSES AND CONTACT POINT(S)': 'authority',
-        'DESCRIPTION': 'description',
-        'Description': 'description',
-        'Common procurement vocabulary (CPV)': 'cpv_codes',
-    }
-
+list_fields = dataset.connect('sqlite:///reference.db').get_table('list_fields')
+list_fields_all = list(list_fields.all())
 
 def text_html(field, el):
     return {field: html.tostring(el)}
@@ -42,12 +12,31 @@ def text_html(field, el):
 def text_plain(field, el):
     for br in el.findall('.//br'):
         br.text = '\n'
-    text = el.text_content()
+    text = el.text_content().strip()
     return {field: text}
 
+def text_value(field, el):
+    data = {}
+    cur_field = field
+    plain = text_plain(field, el)[field]
+    for line in plain.split('\n'):
+        lline = line.lower()
+        if lline.startswith('value '):
+            data[cur_field] = line[6:]
+        elif 'vat' in lline or lline.startswith('including') or \
+            lline.startswith('excluding'):
+            data[cur_field + '_vat'] = line
+        elif 'total final value' in lline:
+            cur_field = field + '_final'
+        elif 'initial estimated total value' in lline:
+            cur_field = field + '_initial'
+        elif 'annual or monthly' in lline:
+            data[cur_field + '_term'] = line
+        else:
+            print plain.split('\n')
+    return data
+
 def text_addr(field, el):
-    #addr = el.find('.//p[@class="addr"]')
-    #assert addr, el
     name = plain = text_plain(field, el)[field]
     if '\n' in name:
         name, _ = name.split('\n', 1)
@@ -55,8 +44,12 @@ def text_addr(field, el):
 
 FIELD_HANDLERS = {
     'description': text_plain,
-    'recipient': text_addr,
-    'authority': text_addr
+    'tenderer': text_addr,
+    'authority': text_addr,
+    'value': text_value,
+    'total_value': text_value,
+    'cpv': text_plain,
+    'dac_code': text_plain
     }
 
 def parse_mli(mli):
@@ -75,12 +68,16 @@ def parse_list(el):
     data = {}
     for mli in el.findall('./div[@class="mlioccur"]'):
         k, v = parse_mli(mli)
-        #if k not in LIST_FIELDS:
-        #    print [k]
-        k = LIST_FIELDS.get(k, k)
-        if not len(v):
+        if not len(v) or k is None:
             continue
-        data.update(FIELD_HANDLERS.get(k, text_html)(k, v))
+        column = None
+        for lf in list_fields_all:
+            if lf.get('field') == k:
+                column = lf.get('column')
+        if column is not None:
+            data.update(FIELD_HANDLERS.get(column, text_html)(column, v))
+        else:
+            list_fields.upsert({'field': k}, ['field'])
     return data
 
 def parse_awards(doc):
@@ -104,11 +101,20 @@ def parse_awards(doc):
             data.update(section)
     
     if not len(contracts):
-        pprint(data)
+        yield data
     else:
         for contract in contracts:
             contract.update(data)
-            pprint(contract)
+            yield contract
 
-def extract_awards(uri, doc):
-    pass
+def extract_awards(engine, uri, doc):
+    table = engine['awards']
+    table.delete(uri=uri)
+    contracts = []
+    for contract in parse_awards(doc):
+        contract['uri'] = uri
+        pprint(contract)
+        table.insert(contract)
+
+
+
