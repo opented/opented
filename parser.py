@@ -2,6 +2,8 @@ from pprint import pprint
 from lxml import html
 from common import traverse_local, as_document
 
+import dataset
+
 DATA_CODES = {
     'TI': ('title', 'item'),
     'ND': ('document_number', 'item'),
@@ -85,19 +87,37 @@ def parse_data(path):
             data[field + '_name'] = name.strip()
         else:
             data[field] = text
+
+    num, year = data.get('document_number').split('-')
+    data['uri'] = 'TED:NOTICE:%s-%s:DATA:EN:HTML' % (num, year)
     return data
 
-def parse_tender(paths):
+def parse_tender(engine, paths):
     data = parse_current_language(paths[0])
     data.update(parse_data(paths[3]))
-
-    if 'award' in data['heading'].lower():
+    if not 'uri' in data:
         pprint(data)
+        return
 
-def parse():
+    # find out what this is good for :)
+    if 'cpv_original_code' in data:
+        del data['cpv_original_code']
+    for cpv_link in data.pop('cpv_code'):
+        cpv_code, cpv_title = cpv_link.split(' - ')
+        engine['document_cpv'].upsert({
+            'document_uri': data['uri'],
+            'code': cpv_code,
+            'title': cpv_title }, ['document_uri', 'code'])
+    engine['document'].upsert(data, ['uri'])
+    print data['uri']
+    #if 'award' in data['heading'].lower():
+    #    pprint(data)
+
+def parse(engine):
     for paths in traverse_local():
-        parse_tender(paths)
+        parse_tender(engine, paths)
 
 
 if __name__ == '__main__':
-    parse()
+    engine = dataset.connect('postgresql://localhost/opented')
+    parse(engine)
