@@ -1,7 +1,7 @@
 from pprint import pprint
 from lxml import html
 from common import traverse_local, as_document
-from awards import parse_award
+from awards import parse_awards, extract_awards
 
 import dataset
 
@@ -83,10 +83,12 @@ def parse_tender(engine, paths):
         return
 
     if 'award' in data['heading'].lower():
-        print "AWARD", data['uri'], [data['heading']]
-        print paths[0]
-        parse_award(lang_doc)
+        #print "AWARD", data['uri'], [data['heading']]
+        #print paths[0]
+        #parse_awards(lang_doc)
+        extract_awards(data['uri'], lang_doc)
         #pprint(data)
+    return
 
     # find out what this is good for :)
     if 'cpv_original_code' in data:
