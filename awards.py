@@ -1,5 +1,6 @@
 from lxml import html
 from pprint import pprint
+import re
 
 import dataset
 import dateutil.parser
@@ -7,6 +8,8 @@ import dateutil.parser
 list_fields = dataset.connect('sqlite:///reference.db').get_table('list_fields')
 list_fields_all = list(list_fields.all())
 
+MONEY_RE = re.compile('[ \d,\.]+ [A-Z]{3}')
+CCY_AT_THE_END = re.compile('[\d,\.]+[A-Z]{3}')
 
 def text_html(field, el):
     return {field: html.tostring(el)}
@@ -41,7 +44,7 @@ def text_value(field, el):
             sline = line[len('Lowest offer '):]
             first, last = sline.split('and highest offer', 1)
             lower_value = first.strip().replace(' ', '').replace(',', '.')
-            higher_value, higher_currency = money_from_string(last)
+            higher_value, higher_currency = money_from_string(last.replace('-',''))
             lower_currency = higher_currency
             data.update({
                 '%s_%s_%s' % (cur_field, 'higher', 'value'): higher_value,
@@ -64,10 +67,28 @@ def text_value(field, el):
             data[cur_field + '_term'] = line
         elif 'number of months' in lline or 'number of years' in lline:
             data[cur_field + '_term'] = line
+        elif MONEY_RE.match(line):
+            tempvalue, tempccy = money_from_string(line)
+            data.update({
+                    field: tempvalue,
+                    field+'_currency': tempccy
+                }
+                )
+        elif line.startswith('Lot'):
+            tempvalue, tempccy = money_from_string(lline.split(':')[1])
+#            print 'Lot line: %s -- %s -- %s' % (line, tempvalue, tempccy)
+            data.setdefault(field, 0)
+            data[field] += tempvalue
+            data.update({
+                    field+'_currency': tempccy
+                }
+                )      
         else:
-            print plain.split('\n')
-    #if not field in data:
-    #    data[field] = plain
+            data.update({
+                    field: -1,
+                    field+'_currency': 'XXX'
+                }
+                ) 
     return data
 
 
@@ -86,8 +107,21 @@ def money_value(field, el=None, value=None):
 
 
 def money_from_string(s):
-    currency = s[-3:]
-    value = s[:-3].strip().replace(' ', '').replace(',', '.')
+    cleans = s.strip().replace(' ', '').replace('.','').replace(',', '.')
+    try:
+        if CCY_AT_THE_END.match(cleans):
+            currency = cleans[-3:]
+        else:
+            currency = cleans[:3]   
+    except ValueError:
+       currency = 'XXX'
+    try:
+        if CCY_AT_THE_END.match(cleans):
+            value = float(cleans[:-3])
+        else:
+            value = float(cleans[3:])      
+    except ValueError:
+        value = -1
     return value, currency
 
 
