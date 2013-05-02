@@ -4,6 +4,8 @@ from common import traverse_local, as_document
 from awards import parse_awards, extract_awards
 from text import extract_plain
 
+from optparse import OptionParser
+
 import os
 import dataset
 
@@ -117,5 +119,11 @@ if __name__ == '__main__':
     else:
         db_addr = 'postgresql://localhost/opented'
 
-    engine = dataset.connect(db_addr)
+    p = OptionParser()
+    p.add_option("--db", dest="database", default=db_addr)
+    p.add_option("--filename", dest="filename", default=None)
+
+    options, args = p.parse_args()
+
+    engine = dataset.connect(options.database)
     parse(engine)
