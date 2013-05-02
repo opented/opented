@@ -96,6 +96,7 @@ def award_date(field, el):
     for br in el.findall('.//br'):
         br.text = '\n'
     text = el.text_content().strip()
+    print text
     return {field: text}
 
 
