@@ -93,7 +93,10 @@ def parse_tender(engine, paths):
     if 'award' in data['heading'].lower():
         #print paths[0]
         #parse_awards(lang_doc)
-        extract_awards(engine, data['uri'], lang_doc)
+        try:
+            extract_awards(engine, data['uri'], lang_doc)
+        except Exception, e:
+            print [e]
         #pprint(data)
 
     print data['uri']
