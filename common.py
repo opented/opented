@@ -11,15 +11,21 @@ def tender_path(year, num, tab, create=True):
         os.makedirs(dirname)
     return path
 
+def generate_paths(year, num):
+    path = tender_path(year, num, 0, create=False)
+    if not os.path.isfile(path):
+        return None
+    dir_base = os.path.dirname(path)
+    pattern = dir_base + '/tab_%s.html'
+    return [pattern % i for i in range(0, 4)]
+
 def traverse_local():
     for year in range(2009, 2014):
         for num in count(1):
-            path = tender_path(year, num, 0, create=False)
-            if not os.path.isfile(path):
+            paths = generate_paths(year, num)
+            if paths is None:
                 break
-            dir_base = os.path.dirname(path)
-            pattern = dir_base + '/tab_%s.html'
-            yield [pattern % i for i in range(0, 4)]
+            yield paths
 
 def as_document(path):
     try:

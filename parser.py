@@ -110,6 +110,8 @@ def parse_tender(engine, paths):
 
 def parse(engine):
     for paths in traverse_local():
+        print paths
+        continue
         parse_tender(engine, paths)
 
 
