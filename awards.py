@@ -6,14 +6,17 @@ import dataset
 list_fields = dataset.connect('sqlite:///reference.db').get_table('list_fields')
 list_fields_all = list(list_fields.all())
 
+
 def text_html(field, el):
     return {field: html.tostring(el)}
+
 
 def text_plain(field, el):
     for br in el.findall('.//br'):
         br.text = '\n'
     text = el.text_content().strip()
     return {field: text}
+
 
 def text_value(field, el):
     data = {}
@@ -33,8 +36,8 @@ def text_value(field, el):
             data[cur_field] = line
         elif lline.startswith('lowest offer '):
             data[cur_field] = line
-        elif 'vat' in lline or lline.startswith('including') or \
-            lline.startswith('excluding'):
+        elif ('vat' in lline or lline.startswith('including') or
+                lline.startswith('excluding')):
             data[cur_field + '_vat'] = line
         elif 'contract no' in lline or 'contract number' in lline:
             data['contract_nr'] = line
@@ -54,6 +57,7 @@ def text_value(field, el):
         data[field] = plain
     return data
 
+
 def text_addr(field, el):
     name = plain = text_plain(field, el)[field]
     if '\n' in name:
@@ -68,7 +72,8 @@ FIELD_HANDLERS = {
     'total_value': text_value,
     'cpv': text_plain,
     'dac_code': text_plain
-    }
+}
+
 
 def parse_mli(mli):
     key = None
@@ -78,9 +83,9 @@ def parse_mli(mli):
     text = mli.cssselect('.txtmark')
     if not len(text):
         return key, ''
-    assert len(text)==1, text
+    assert len(text) == 1, text
     return key, text.pop()
-    
+
 
 def parse_list(el):
     data = {}
@@ -98,6 +103,7 @@ def parse_list(el):
             list_fields.upsert({'field': k}, ['field'])
     return data
 
+
 def parse_awards(doc):
     body = doc.find('.//div[@class="DocumentBody"]')
     data = parse_list(body)
@@ -111,13 +117,13 @@ def parse_awards(doc):
         subtitle = seq.find('./span')
         if subtitle is not None:
             subtitle = subtitle.text
-            assert title.lower()=='SECTION V: AWARD OF CONTRACT'.lower(), \
-                [title, subtitle]
+            assert title.lower() == 'SECTION V: AWARD OF CONTRACT'.lower(), \
+                    [title, subtitle]
             section['contract_id'] = subtitle
             contracts.append(section)
         else:
             data.update(section)
-    
+
     if not len(contracts):
         yield data
     else:
@@ -125,14 +131,11 @@ def parse_awards(doc):
             contract.update(data)
             yield contract
 
+
 def extract_awards(engine, uri, doc):
     table = engine['awards']
     table.delete(uri=uri)
-    contracts = []
     for contract in parse_awards(doc):
         contract['uri'] = uri
         #pprint(contract)
         table.insert(contract)
-
-
-
