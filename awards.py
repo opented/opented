@@ -65,8 +65,8 @@ def text_value(field, el):
             data[cur_field + '_term'] = line
         else:
             print plain.split('\n')
-    if not field in data:
-        data[field] = plain
+    #if not field in data:
+    #    data[field] = plain
     return data
 
 
