@@ -91,7 +91,8 @@ def money_from_string(s):
 
 
 def award_date(field, el):
-    print "OOK"
+    print "DATE"
+    print field, el
     for br in el.findall('.//br'):
         br.text = '\n'
     text = el.text_content().strip()

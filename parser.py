@@ -38,6 +38,7 @@ DATA_CODES = {
 
 
 def parse_current_language(path):
+    print "PCL PATH ", path
     cl = as_document(path)
     data = {'source_tender': path.rsplit('/', 1)[0]}
     data['title_uc'] = cl.cssselect('#mainContent h2').pop().text
@@ -81,6 +82,8 @@ def parse_data(path):
 
 
 def parse_tender(engine, paths):
+    print "PATHS ", paths
+
     lang_doc, data = parse_current_language(paths[0])
     data.update(parse_data(paths[3]))
     if not 'uri' in data:
@@ -129,7 +132,9 @@ if __name__ == '__main__':
     engine = dataset.connect(options.database)
 
     if options.year and options.num:
-        parse_tender(engine, generate_paths(options.year, options.num))
+        paths = generate_paths(options.year, options.num)
+        if paths is not None:
+            parse_tender(engine, paths)
     else:
         parse(engine)
 
