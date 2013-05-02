@@ -135,7 +135,7 @@ def parse_list(el):
             if lf.get('field') == k:
                 column = lf.get('column')
         if column is not None:
-            data.update(FIELD_HANDLERS.get(column, text_html)(column, v))
+            data.update(FIELD_HANDLERS.get(column, text_plain)(column, v))
         else:
             list_fields.upsert({'field': k}, ['field'])
     return data
