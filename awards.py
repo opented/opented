@@ -73,6 +73,9 @@ def text_value(field, el):
 
 
 def text_addr(field, el):
+    addr = el.cssselect('.addr')
+    if len(addr):
+        el = addr.pop()
     name = plain = text_plain(field, el)[field]
     if '\n' in name:
         name, _ = name.split('\n', 1)
@@ -151,7 +154,7 @@ def parse_awards(doc):
             contracts.append(section)
         else:
             data.update(section)
-
+    
     if not len(contracts):
         yield data
     else:
@@ -163,7 +166,8 @@ def parse_awards(doc):
 def extract_awards(engine, uri, doc):
     table = engine['awards']
     table.delete(uri=uri)
+    print [uri]
     for contract in parse_awards(doc):
         contract['uri'] = uri
-        #pprint(contract)
+        pprint(contract)
         table.insert(contract)
