@@ -2,6 +2,7 @@ from pprint import pprint
 from lxml import html
 from common import traverse_local, as_document
 from awards import parse_awards, extract_awards
+from text import extract_plain
 
 import os
 import dataset
@@ -90,6 +91,8 @@ def parse_tender(engine, paths):
         extract_awards(engine, data['uri'], lang_doc)
         #pprint(data)
 
+    print data['uri']
+
     # find out what this is good for :)
     if 'cpv_original_code' in data:
         del data['cpv_original_code']
@@ -100,6 +103,7 @@ def parse_tender(engine, paths):
             'code': cpv_code,
             'title': cpv_title }, ['document_uri', 'code'])
     engine['document'].upsert(data, ['uri'])
+    extract_plain(engine, data['uri'], lang_doc)
     #print data['uri']
 
 def parse(engine):
