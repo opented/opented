@@ -1,6 +1,6 @@
 from pprint import pprint
 from lxml import html
-from common import traverse_local, as_document
+from common import traverse_local, as_document, generate_paths
 from awards import parse_awards, extract_awards
 from text import extract_plain
 
@@ -121,9 +121,15 @@ if __name__ == '__main__':
 
     p = OptionParser()
     p.add_option("--db", dest="database", default=db_addr)
-    p.add_option("--dir", dest="dirname", default=None)
+    p.add_option("--year", dest="year", type=int, default=None)
+    p.add_option("--num", dest="num", type=int, default=None)
 
     options, args = p.parse_args()
 
     engine = dataset.connect(options.database)
-    parse(engine)
+
+    if options.year and options.num:
+        parse_tender(engine, generate_paths(options.year, options.num))
+    else:
+        parse(engine)
+
