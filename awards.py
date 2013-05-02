@@ -2,6 +2,7 @@ from lxml import html
 from pprint import pprint
 
 import dataset
+import dateutil.parser
 
 list_fields = dataset.connect('sqlite:///reference.db').get_table('list_fields')
 list_fields_all = list(list_fields.all())
@@ -91,13 +92,15 @@ def money_from_string(s):
 
 
 def award_date(field, el):
-    print "DATE"
-    print field, el
     for br in el.findall('.//br'):
         br.text = '\n'
     text = el.text_content().strip()
-    print text
-    return {field: text}
+    try:
+        data = dateutil.parser.parse(text)
+        value = data.strftime('%Y-%m-%d')
+    except:
+        value = text
+    return {field: value}
 
 
 FIELD_HANDLERS = {
