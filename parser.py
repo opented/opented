@@ -110,8 +110,6 @@ def parse_tender(engine, paths):
 
 def parse(engine):
     for paths in traverse_local():
-        print paths
-        continue
         parse_tender(engine, paths)
 
 
@@ -123,7 +121,7 @@ if __name__ == '__main__':
 
     p = OptionParser()
     p.add_option("--db", dest="database", default=db_addr)
-    p.add_option("--filename", dest="filename", default=None)
+    p.add_option("--dir", dest="dirname", default=None)
 
     options, args = p.parse_args()
 
