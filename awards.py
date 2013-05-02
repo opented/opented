@@ -27,15 +27,29 @@ def text_value(field, el):
         if not len(lline):
             continue
         elif lline.startswith('value '):
-            data[cur_field] = line[6:]
+            data.update(money_value(cur_field, None, line[6:]))
         elif lline.startswith('value: '):
-            data[cur_field] = line[7:]
+            data.update(money_value(cur_field, None, line[7:]))
         elif lline.startswith('amount '):
             data[cur_field] = line[7:]
         elif lline.startswith('value of the contract: '):
             data[cur_field] = line
         elif lline.startswith('lowest offer '):
-            data[cur_field] = line
+            """
+            E.g.
+            Lowest offer 566 909,62 and highest offer 662 717,50 PLN
+            """
+            sline = line[len('Lowest offer '):]
+            first, last = sline.split('and highest offer', 1)
+            lower_value = first.strip().replace(' ', '').replace(',', '.')
+            higher_value, higher_currency = money_from_string(last)
+            lower_currency = higher_currency
+            data.update({
+                '%s_%s_%s' % (cur_field, 'higher', 'value'): higher_value,
+                '%s_%s_%s' % (cur_field, 'higher', 'currency'): higher_currency,
+                '%s_%s_%s' % (cur_field, 'lower', 'value'): lower_value,
+                '%s_%s_%s' % (cur_field, 'lower', 'currency'): lower_currency
+            })
         elif ('vat' in lline or lline.startswith('including') or
                 lline.startswith('excluding')):
             data[cur_field + '_vat'] = line
@@ -63,6 +77,20 @@ def text_addr(field, el):
     if '\n' in name:
         name, _ = name.split('\n', 1)
     return {field + '_name': name, field + '_addr': plain}
+
+
+def money_value(field, el=None, value=None):
+    if value is None:
+        value = text_plain(field, el)[field]
+    value, currency = money_from_string(value)
+    return {field: value, field + '_currency': currency}
+
+
+def money_from_string(s):
+    currency = s[-3:]
+    value = s[:-3].strip().replace(' ', '').replace(',', '.')
+    return value, currency
+
 
 FIELD_HANDLERS = {
     'description': text_plain,
