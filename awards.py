@@ -22,18 +22,16 @@ def text_value(field, el):
     data = {}
     cur_field = field
     plain = text_plain(field, el)[field]
+    value_columns = ('value ', 'value: ', 'amount ', 'value of the contract: ',)
     for line in plain.split('\n'):
         lline = line.lower()
         if not len(lline):
             continue
-        elif lline.startswith('value '):
-            data.update(money_value(cur_field, None, line[6:]))
-        elif lline.startswith('value: '):
-            data.update(money_value(cur_field, None, line[7:]))
-        elif lline.startswith('amount '):
-            data[cur_field] = line[7:]
-        elif lline.startswith('value of the contract: '):
-            data[cur_field] = line
+        elif lline.startswith(value_columns):
+            for vc in value_columns:
+                if lline.startswith(vc):
+                    data.update(money_value(cur_field, None, line[len(vc):]))
+                    break
         elif lline.startswith('lowest offer '):
             """
             E.g.
