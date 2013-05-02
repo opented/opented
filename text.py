@@ -17,3 +17,16 @@ def extract_plain(engine, uri, doc):
     text = DOUBLES.sub(' ', text)
     engine['plain'].upsert({'uri': uri, 'text': text}, ['uri'])
 
+def ctext(el):
+    result = []
+    if el.text:
+        result.append(el.text)
+    for sel in el:
+        if sel.tag in ["br"]:
+            result.append(ctext(sel))
+            result.append('\n')
+        else:
+            result.append(ctext(sel))
+        if sel.tail:
+            result.append(sel.tail)
+    return "".join(result)

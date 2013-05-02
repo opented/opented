@@ -2,6 +2,7 @@ from lxml import html
 from pprint import pprint
 
 import dataset
+import dateutil.parser
 
 list_fields = dataset.connect('sqlite:///reference.db').get_table('list_fields')
 list_fields_all = list(list_fields.all())
@@ -22,18 +23,16 @@ def text_value(field, el):
     data = {}
     cur_field = field
     plain = text_plain(field, el)[field]
+    value_columns = ('value ', 'value: ', 'amount ', 'value of the contract: ',)
     for line in plain.split('\n'):
         lline = line.lower()
         if not len(lline):
             continue
-        elif lline.startswith('value '):
-            data.update(money_value(cur_field, None, line[6:]))
-        elif lline.startswith('value: '):
-            data.update(money_value(cur_field, None, line[7:]))
-        elif lline.startswith('amount '):
-            data[cur_field] = line[7:]
-        elif lline.startswith('value of the contract: '):
-            data[cur_field] = line
+        elif lline.startswith(value_columns):
+            for vc in value_columns:
+                if lline.startswith(vc):
+                    data.update(money_value(cur_field, None, line[len(vc):]))
+                    break
         elif lline.startswith('lowest offer '):
             """
             E.g.
@@ -67,8 +66,8 @@ def text_value(field, el):
             data[cur_field + '_term'] = line
         else:
             print plain.split('\n')
-    if not field in data:
-        data[field] = plain
+    #if not field in data:
+    #    data[field] = plain
     return data
 
 
@@ -95,6 +94,18 @@ def money_from_string(s):
     return value, currency
 
 
+def award_date(field, el):
+    for br in el.findall('.//br'):
+        br.text = '\n'
+    text = el.text_content().strip()
+    try:
+        data = dateutil.parser.parse(text)
+        value = data.strftime('%Y-%m-%d')
+    except:
+        value = text
+    return {field: value}
+
+
 FIELD_HANDLERS = {
     'description': text_plain,
     'tenderer': text_addr,
@@ -102,7 +113,8 @@ FIELD_HANDLERS = {
     'value': text_value,
     'total_value': text_value,
     'cpv': text_plain,
-    'dac_code': text_plain
+    'dac_code': text_plain,
+    'award_date': award_date
 }
 
 
@@ -129,7 +141,7 @@ def parse_list(el):
             if lf.get('field') == k:
                 column = lf.get('column')
         if column is not None:
-            data.update(FIELD_HANDLERS.get(column, text_html)(column, v))
+            data.update(FIELD_HANDLERS.get(column, text_plain)(column, v))
         else:
             list_fields.upsert({'field': k}, ['field'])
     return data

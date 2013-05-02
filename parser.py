@@ -1,8 +1,10 @@
 from pprint import pprint
 from lxml import html
-from common import traverse_local, as_document
+from common import traverse_local, as_document, generate_paths
 from awards import parse_awards, extract_awards
 from text import extract_plain
+
+from optparse import OptionParser
 
 import os
 import dataset
@@ -36,6 +38,7 @@ DATA_CODES = {
 
 
 def parse_current_language(path):
+    print "PCL PATH ", path
     cl = as_document(path)
     data = {'source_tender': path.rsplit('/', 1)[0]}
     data['title_uc'] = cl.cssselect('#mainContent h2').pop().text
@@ -74,10 +77,13 @@ def parse_data(path):
 
     num, year = data.get('document_number').split('-')
     data['uri'] = 'TED:NOTICE:%s-%s:DATA:EN:HTML' % (num, year)
+
     return data
 
 
 def parse_tender(engine, paths):
+    print "PATHS ", paths
+
     lang_doc, data = parse_current_language(paths[0])
     data.update(parse_data(paths[3]))
     if not 'uri' in data:
@@ -85,7 +91,6 @@ def parse_tender(engine, paths):
         return
 
     if 'award' in data['heading'].lower():
-        #print "AWARD", data['uri'], [data['heading']]
         #print paths[0]
         #parse_awards(lang_doc)
         extract_awards(engine, data['uri'], lang_doc)
@@ -117,5 +122,19 @@ if __name__ == '__main__':
     else:
         db_addr = 'postgresql://localhost/opented'
 
-    engine = dataset.connect(db_addr)
-    parse(engine)
+    p = OptionParser()
+    p.add_option("--db", dest="database", default=db_addr)
+    p.add_option("--year", dest="year", type=int, default=None)
+    p.add_option("--num", dest="num", type=int, default=None)
+
+    options, args = p.parse_args()
+
+    engine = dataset.connect(options.database)
+
+    if options.year and options.num:
+        paths = generate_paths(options.year, options.num)
+        if paths is not None:
+            parse_tender(engine, paths)
+    else:
+        parse(engine)
+
