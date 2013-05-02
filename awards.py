@@ -92,6 +92,14 @@ def money_from_string(s):
     return value, currency
 
 
+def award_date(field, el):
+    print "OOK"
+    for br in el.findall('.//br'):
+        br.text = '\n'
+    text = el.text_content().strip()
+    return {field: text}
+
+
 FIELD_HANDLERS = {
     'description': text_plain,
     'tenderer': text_addr,
@@ -99,7 +107,8 @@ FIELD_HANDLERS = {
     'value': text_value,
     'total_value': text_value,
     'cpv': text_plain,
-    'dac_code': text_plain
+    'dac_code': text_plain,
+    'award_date': award_date
 }
 
 

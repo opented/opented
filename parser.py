@@ -74,6 +74,7 @@ def parse_data(path):
 
     num, year = data.get('document_number').split('-')
     data['uri'] = 'TED:NOTICE:%s-%s:DATA:EN:HTML' % (num, year)
+
     return data
 
 
@@ -85,7 +86,6 @@ def parse_tender(engine, paths):
         return
 
     if 'award' in data['heading'].lower():
-        #print "AWARD", data['uri'], [data['heading']]
         #print paths[0]
         #parse_awards(lang_doc)
         extract_awards(engine, data['uri'], lang_doc)
