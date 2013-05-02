@@ -3,6 +3,7 @@ from lxml import html
 from common import traverse_local, as_document
 from awards import parse_awards, extract_awards
 
+import os
 import dataset
 
 DATA_CODES = {
@@ -107,5 +108,10 @@ def parse(engine):
 
 
 if __name__ == '__main__':
-    engine = dataset.connect('postgresql://localhost/opented')
+    if "DATABASE" in os.environ:
+        db_addr = os.environ['DATABASE']
+    else:
+        db_addr = 'postgresql://localhost/opented'
+
+    engine = dataset.connect(db_addr)
     parse(engine)
