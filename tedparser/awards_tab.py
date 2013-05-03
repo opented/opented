@@ -29,7 +29,7 @@ def text_plain(field, el):
     return {field: text}
 
 
-def award_date(field, el):
+def text_date(field, el):
     for br in el.findall('.//br'):
         br.text = '\n'
     text = el.text_content().strip()
@@ -49,7 +49,7 @@ FIELD_HANDLERS = {
     'total_value': text_value,
     'cpv': text_plain,
     'dac_code': text_plain,
-    'award_date': award_date
+    'award_date': text_date
 }
 
 
