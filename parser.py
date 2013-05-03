@@ -38,7 +38,6 @@ DATA_CODES = {
 
 
 def parse_current_language(path):
-    print "PCL PATH ", path
     cl = as_document(path)
     data = {'source_tender': path.rsplit('/', 1)[0]}
     data['title_uc'] = cl.cssselect('#mainContent h2').pop().text
@@ -82,7 +81,7 @@ def parse_data(path):
 
 
 def parse_tender(engine, paths):
-    print "PATHS ", paths
+    #print "PATHS ", paths
 
     lang_doc, data = parse_current_language(paths[0])
     data.update(parse_data(paths[3]))
@@ -99,7 +98,7 @@ def parse_tender(engine, paths):
             print [e]
         #pprint(data)
 
-    print data['uri']
+    #print data['uri']
 
     # find out what this is good for :)
     if 'cpv_original_code' in data:
