@@ -61,7 +61,7 @@ def parse_mli(mli):
     text = mli.cssselect('.txtmark')
     if not len(text):
         return key, ''
-    assert len(text) == 1, text
+    #assert len(text) == 1, text
     return key, text.pop()
 
 
