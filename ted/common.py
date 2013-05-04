@@ -3,6 +3,14 @@ from itertools import count
 from lxml import html
 
 
+def get_engine():
+    if "DATABASE" in os.environ:
+        db_addr = os.environ['DATABASE']
+    else:
+        db_addr = 'postgresql://localhost/opented'
+    return dataset.connect(db_addr)
+
+
 def tender_path(year, num, tab, create=True):
     hash_dir = int(str(num)[:3])
     path = 'tenders/%s/%03d/%s/tab_%s.html' % (year, hash_dir, num, tab)

@@ -1,6 +1,7 @@
 from pprint import pprint
 from lxml import html
 from common import traverse_local, as_document, generate_paths
+from common import get_engine
 from awards_tab import parse_awards, extract_awards
 from data_tab import parse_data
 from text import extract_plain
@@ -69,19 +70,13 @@ def parse_threaded(engine):
 
 
 if __name__ == '__main__':
-    if "DATABASE" in os.environ:
-        db_addr = os.environ['DATABASE']
-    else:
-        db_addr = 'postgresql://localhost/opented'
 
     p = OptionParser()
-    p.add_option("--db", dest="database", default=db_addr)
     p.add_option("--year", dest="year", type=int, default=None)
     p.add_option("--num", dest="num", type=int, default=None)
 
     options, args = p.parse_args()
-
-    engine = dataset.connect(options.database)
+    engine = get_engine()
 
     if options.year and options.num:
         paths = generate_paths(options.year, options.num)
