@@ -1,15 +1,22 @@
 import re
 from pprint import pprint
 
+NUMBER_REF = '\d[ \d]*(,\d{2})'
+
 MONEY_RE = re.compile('[ \d,\.]+ [A-Z]{3}')
 CCY_AT_THE_END = re.compile('[\d,\.]+[A-Z]{3}')
 
 def text_value(field, el):
+    from awards_tab import text_plain
+    plain = text_plain(field, el)[field]
+    return _text_value(field, plain.split('\n'))
+
+def _text_value(field, lines):
     data = {}
     cur_field = field
-    plain = text_plain(field, el)[field]
     value_columns = ('value ', 'value: ', 'amount ', 'value of the contract: ',)
-    for line in plain.split('\n'):
+    print lines
+    for line in lines:
         lline = line.lower()
         if not len(lline):
             continue
@@ -101,4 +108,18 @@ def money_from_string(s):
 
 
 
+if __name__ == '__main__':
+    samples = (
+        ['Lowest offer 0,02 and highest offer 29 458,87 RON', 'Excluding VAT'],
+        ['Value 686 986,81 EUR', 'Excluding VAT'],
+        ['Value 1 850 000 EUR', 'Including VAT. VAT rate (%) 20.0'],
+        ['Value 240 743,7 LTL', 'Including VAT. VAT rate (%) 5'],
+        ['Lowest offer 550 000 and highest offer 700 000 EUR', 'Excluding VAT'],
+        ['Value: 1 342 685,90 PLN', 'Including VAT. VAT rate (%) 23'],
+        ['Value 732 758,62 EUR'],
+        ['Value 5 404 552,35 EUR', 'Excluding VAT'],
+        ['Lowest offer 35 536,45 and highest offer 323 753,45 EUR', 'Including VAT. VAT rate (%) 19']
+        )
 
+    for sample in samples:
+        pprint(_text_value('v', sample))
