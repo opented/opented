@@ -33,19 +33,20 @@ def parse_tender(engine, paths):
     lang_doc, data = parse_current_language(paths[0])
     data.update(parse_data(paths[3]))
     if not 'uri' in data:
-        pprint(data)
+        #pprint(data)
         return
 
     if 'award' in data['heading'].lower():
         #print paths[0]
         #parse_awards(lang_doc)
-        try:
-            extract_awards(engine, data['uri'], lang_doc)
-        except Exception, e:
-            print [e]
+        #try:
+        extract_awards(engine, data['uri'], lang_doc)
+        #except Exception, e:
+        #    print [e]
         #pprint(data)
 
     #print data['uri']
+    return 
 
     # find out what this is good for :)
     if 'cpv_original_code' in data:

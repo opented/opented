@@ -1,10 +1,21 @@
 import re
 from pprint import pprint
 
-NUMBER_REF = '\d[ \d]*(,\d{2})'
+NUMRE = '\d[\. \d]*(,\d{1,2})?'
+CURRE = '(HT )?(?P<cur>[A-Z]{3})'
+
+VALUE_LINE_RE = re.compile('^(Value|Amount|Value of the contract):?\s*(?P<val>' + \
+        NUMRE+')\s*'+CURRE, re.M)
+RANGE_LINE_RE = re.compile('^Lowest offer (?P<lo>'+NUMRE+') and highest ' + \
+        'offer (?P<hi>(\-|'+NUMRE+')) '+CURRE)
+VAT_LINE_RE = re.compile('^(Excluding VAT|Including VAT).*')
 
 MONEY_RE = re.compile('[ \d,\.]+ [A-Z]{3}')
 CCY_AT_THE_END = re.compile('[\d,\.]+[A-Z]{3}')
+
+def to_number(value):
+    value = value.replace(' ', '').replace('.', '').replace(',', '.')
+    return float(value)
 
 def text_value(field, el):
     from awards_tab import text_plain
@@ -12,6 +23,23 @@ def text_value(field, el):
     return _text_value(field, plain.split('\n'))
 
 def _text_value(field, lines):
+    for line in lines:
+        m = VAT_LINE_RE.match(line)
+        if m is not None:
+            #print [line, m.groups()]
+            continue
+        m = VALUE_LINE_RE.match(line)
+        if m is not None:
+            #print [line, to_number(m.group('val'))]
+            continue
+        m = RANGE_LINE_RE.match(line)
+        if m is not None:
+            #print [line, to_number(m.group('val'))]
+            continue
+        print 'XXX', lines
+    return {}
+
+def old_text_value(field, lines):
     data = {}
     cur_field = field
     value_columns = ('value ', 'value: ', 'amount ', 'value of the contract: ',)
@@ -122,4 +150,5 @@ if __name__ == '__main__':
         )
 
     for sample in samples:
-        pprint(_text_value('v', sample))
+        data = _text_value('v', sample)
+        #pprint(data)
