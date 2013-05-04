@@ -1,21 +1,29 @@
 import re
 from pprint import pprint
 
-NUMRE = '(-|\s{0,5}|\d[\. \d]*(,\d{1,2})?)'
-CURRE = '(HT )?(?P<cur>[A-Z]{3})'
+NUMRE = '(-|[\., \d]*(,\d{1,2})?)'
+CURRE = '(HT )?(?P<cur>[A-Z]{3})\.?'
 
-VALUE_LINE_RE = re.compile('^(Value|Amount|Value of the contract):?\s*(?P<val>' + \
-        NUMRE+')\s*'+CURRE, re.M)
-RANGE_LINE_RE = re.compile('^Lowest offer (?P<lo>'+NUMRE+') and highest ' + \
+VALUE_LINE_RE = re.compile('^(Value|Amount|Value of the contract):?([^\d]*|.*- )?(?P<val>' + \
+        NUMRE+')[^\d]*(\s*\(.*\)\s*)?'+CURRE, re.M)
+PLAIN_VALUE_RE = re.compile('^(?P<val>'+NUMRE+') '+CURRE+'.*')
+RANGE_LINE_RE = re.compile('^Lowest offer (?P<lo>'+NUMRE+').* (and )?highest ' + \
         'offer (?P<hi>(\-|'+NUMRE+')) '+CURRE)
 VAT_LINE_RE = re.compile('^(Excluding VAT|Including VAT).*')
+INI_LINE_RE = re.compile('^Initial estimated total value of the contract')
+TOTAL_LINE_RE = re.compile('^Total final value of the contract')
+TERMS_LINE_RE = re.compile('^(If annual or monthly value|Number of years|Number of months).*')
+CONTRACT_LINE_RE = re.compile('^(Contract|CONTRACT|Service contract)')
+IGNORE_LINE_RE = re.compile('(^Lot|^$)')
 
-MONEY_RE = re.compile('[ \d,\.]+ [A-Z]{3}')
-CCY_AT_THE_END = re.compile('[\d,\.]+[A-Z]{3}')
 
 def to_number(value):
-    value = value.replace(' ', '').replace('.', '').replace(',', '.')
-    return float(value)
+    if value is not None:
+        value = value.replace(' ', '').replace('.', '').replace(',', '.')
+        try:
+            return float(value)
+        except Exception, ex: pass
+
 
 def text_value(field, el):
     from awards_tab import text_plain
@@ -23,118 +31,65 @@ def text_value(field, el):
     return _text_value(field, plain.split('\n'))
 
 def _text_value(field, lines):
-    for line in lines:
-        m = VAT_LINE_RE.match(line)
-        if m is not None:
-            #print [line, m.groups()]
-            continue
-        m = VALUE_LINE_RE.match(line)
-        if m is not None:
-            #print [line, to_number(m.group('val'))]
-            continue
-        m = RANGE_LINE_RE.match(line)
-        if m is not None:
-            #print [line, to_number(m.group('val'))]
-            continue
-        print 'XXX', lines
-    return {}
-
-def old_text_value(field, lines):
-    data = {}
     cur_field = field
-    value_columns = ('value ', 'value: ', 'amount ', 'value of the contract: ',)
-    print lines
+    data = {field+'_text': '\n'.join(lines)}
+
+    def store_vat(f, m):
+        data[f+'_vat'] = m.group(0)
+
+    def store_value(f, m):
+        data[f] = to_number(m.group('val'))
+        data[f+'_currency'] = m.group('cur')
+
+    def store_range(f, m):
+        data[f+'_currency'] = m.group('cur')
+        data[f+'_lowest'] = to_number(m.group('lo'))
+        data[f+'_highest'] = to_number(m.group('hi'))
+        data[f] = data[f+ '_lowest'] if data[f+'_lowest'] is not None \
+            else data[f+'_highest']
+
+    def set_initial(f, m):
+        return field + '_initial'
+
+    def set_total(f, m):
+        return field
+
+    def store_terms(f, m):
+        data[f+'_terms'] = m.group(0)
+        
+    def store_contract(f, m):
+        data['contract_id'] = m.group(0)
+
+    def store_nop(f, m):
+        pass
+
+    handlers = {
+        VAT_LINE_RE: store_vat,
+        VALUE_LINE_RE: store_value,
+        PLAIN_VALUE_RE: store_value,
+        RANGE_LINE_RE: store_range,
+        INI_LINE_RE: set_initial,
+        TOTAL_LINE_RE: set_total,
+        TERMS_LINE_RE: store_terms,
+        CONTRACT_LINE_RE: store_contract,
+        IGNORE_LINE_RE: store_nop
+        }
+
     for line in lines:
-        lline = line.lower()
-        if not len(lline):
-            continue
-        elif lline.startswith(value_columns):
-            for vc in value_columns:
-                if lline.startswith(vc):
-                    data.update(money_value(cur_field, None, line[len(vc):]))
-                    break
-        elif lline.startswith('lowest offer '):
-            """
-            E.g.
-            Lowest offer 566 909,62 and highest offer 662 717,50 PLN
-            """
-            sline = line[len('Lowest offer '):]
-            first, last = sline.split('and highest offer', 1)
-            lower_value = first.strip().replace(' ', '').replace(',', '.')
-            higher_value, higher_currency = money_from_string(last.replace('-',''))
-            lower_currency = higher_currency
-            data.update({
-                '%s_%s_%s' % (cur_field, 'higher', 'value'): higher_value,
-                '%s_%s_%s' % (cur_field, 'higher', 'currency'): higher_currency,
-                '%s_%s_%s' % (cur_field, 'lower', 'value'): lower_value,
-                '%s_%s_%s' % (cur_field, 'lower', 'currency'): lower_currency
-            })
-        elif ('vat' in lline or lline.startswith('including') or
-                lline.startswith('excluding')):
-            data[cur_field + '_vat'] = line
-        elif 'contract no' in lline or 'contract number' in lline:
-            data['contract_nr'] = line
-        elif 'lot no' in lline:
-            data['lot_nr'] = line
-        elif 'total final value' in lline:
-            cur_field = field + '_final'
-        elif 'initial estimated total value' in lline:
-            cur_field = field + '_initial'
-        elif 'annual or monthly' in lline:
-            data[cur_field + '_term'] = line
-        elif 'number of months' in lline or 'number of years' in lline:
-            data[cur_field + '_term'] = line
-        elif MONEY_RE.match(line):
-            tempvalue, tempccy = money_from_string(line)
-            data.update({
-                    field: tempvalue,
-                    field+'_currency': tempccy
-                }
-                )
-        elif line.startswith('Lot'):
-            tempvalue, tempccy = money_from_string(lline.split(':')[1])
-#            print 'Lot line: %s -- %s -- %s' % (line, tempvalue, tempccy)
-            data.setdefault(field, 0)
-            data[field] += tempvalue
-            data.update({
-                    field+'_currency': tempccy
-                }
-                )      
-        else:
-            data.update({
-                    field: -1,
-                    field+'_currency': 'XXX'
-                }
-                ) 
+        matched = False
+        for regex, handle in handlers.items():
+            m = regex.match(line)
+            if m is not None:
+                f = handle(cur_field, m)
+                if f is not None:
+                    cur_field = f
+                matched = True
+        if not matched: 
+            #print 'XXX', lines
+            print [line]
+    
+    #pprint(data)
     return data
-
-
-def money_value(field, el=None, value=None):
-    if value is None:
-        value = text_plain(field, el)[field]
-    value, currency = money_from_string(value)
-    return {field: value, field + '_currency': currency}
-
-
-def money_from_string(s):
-    cleans = s.strip().replace(' ', '').replace('.','').replace(',', '.')
-    try:
-        if CCY_AT_THE_END.match(cleans):
-            currency = cleans[-3:]
-        else:
-            currency = cleans[:3]   
-    except ValueError:
-       currency = 'XXX'
-    try:
-        if CCY_AT_THE_END.match(cleans):
-            value = float(cleans[:-3])
-        else:
-            value = float(cleans[3:])      
-    except ValueError:
-        value = -1
-    return value, currency
-
-
 
 if __name__ == '__main__':
     samples = (
