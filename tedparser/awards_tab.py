@@ -111,11 +111,11 @@ def parse_awards(doc):
 
 
 def extract_awards(engine, uri, doc):
-    #table = engine['awards']
-    #table.delete(uri=uri)
+    table = engine['awards']
+    table.delete(uri=uri)
     #print [uri]
     for contract in parse_awards(doc):
         contract['uri'] = uri
         #pprint(contract)
-        #table.insert(contract)
+        table.insert(contract)
 

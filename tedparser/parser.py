@@ -4,6 +4,7 @@ from common import traverse_local, as_document, generate_paths
 from awards_tab import parse_awards, extract_awards
 from data_tab import parse_data
 from text import extract_plain
+from threaded import threaded
 
 from optparse import OptionParser
 
@@ -37,16 +38,12 @@ def parse_tender(engine, paths):
         return
 
     if 'award' in data['heading'].lower():
-        #print paths[0]
-        #parse_awards(lang_doc)
         #try:
         extract_awards(engine, data['uri'], lang_doc)
         #except Exception, e:
         #    print [e]
-        #pprint(data)
 
-    #print data['uri']
-    return 
+    print data['uri']
 
     # find out what this is good for :)
     if 'cpv_original_code' in data:
@@ -65,6 +62,10 @@ def parse_tender(engine, paths):
 def parse(engine):
     for paths in traverse_local():
         parse_tender(engine, paths)
+
+def parse_threaded(engine):
+    pt = lambda p: parse_tender(engine, p)
+    threaded(traverse_local(), pt, num_threads=10)
 
 
 if __name__ == '__main__':
@@ -87,5 +88,5 @@ if __name__ == '__main__':
         if paths is not None:
             parse_tender(engine, paths)
     else:
-        parse(engine)
+        parse_threaded(engine)
 
