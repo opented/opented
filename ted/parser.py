@@ -60,7 +60,7 @@ def parse_tender(engine, paths):
             'code': cpv_code,
             'title': cpv_title }, ['document_uri', 'code'])
     engine['document'].upsert(data, ['uri'])
-    extract_plain(engine, data['uri'], lang_doc)
+    #extract_plain(engine, data['uri'], lang_doc)
     #print data['uri']
 
 
