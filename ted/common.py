@@ -2,6 +2,7 @@ import os
 from itertools import count
 from lxml import html
 
+import dataset
 
 def get_engine():
     if "DATABASE" in os.environ:

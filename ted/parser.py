@@ -1,3 +1,4 @@
+import logging
 from pprint import pprint
 from lxml import html
 from common import traverse_local, as_document, generate_paths
@@ -11,6 +12,8 @@ from optparse import OptionParser
 
 import os
 import dataset
+
+log = logging.getLogger(__name__)
 
 
 def parse_current_language(path):
@@ -65,8 +68,12 @@ def parse(engine):
         parse_tender(engine, paths)
 
 def parse_threaded(engine):
-    pt = lambda p: parse_tender(engine, p)
-    threaded(traverse_local(), pt, num_threads=10)
+    def fnc(p):
+        try:
+            parse_tender(engine, p)
+        except Exception, e:
+            log.exception(e)
+    threaded(traverse_local(), fnc, num_threads=20)
 
 
 if __name__ == '__main__':
