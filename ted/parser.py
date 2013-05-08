@@ -63,9 +63,14 @@ def parse_tender(engine, paths):
     extract_plain(engine, data['uri'], lang_doc)
     #print data['uri']
 
+
 def parse(engine):
     for paths in traverse_local():
-        parse_tender(engine, paths)
+        try:
+            parse_tender(engine, paths)
+        except Exception, e:
+            log.exception(e)
+
 
 def parse_threaded(engine):
     def fnc(p):
@@ -73,7 +78,7 @@ def parse_threaded(engine):
             parse_tender(engine, p)
         except Exception, e:
             log.exception(e)
-    threaded(traverse_local(), fnc, num_threads=20)
+    threaded(traverse_local(), fnc, num_threads=5)
 
 
 if __name__ == '__main__':
@@ -90,5 +95,6 @@ if __name__ == '__main__':
         if paths is not None:
             parse_tender(engine, paths)
     else:
-        parse_threaded(engine)
+        #parse_threaded(engine)
+        parse(engine)
 
