@@ -45,4 +45,8 @@ def as_document(path):
     except IOError:
         return None
 
+def get_output_dir():
+    return 'site/'
+
+
 
