@@ -1,4 +1,4 @@
-from common import get_engine, get_output_dir
+from common import get_engine, get_output_dir, list_countries
 from dataset import freeze
 import os
 import sqlalchemy.sql.expression as sql
@@ -31,17 +31,22 @@ def store_csv(q, filename):
     freeze(q, filename=filename, prefix=prefix)
 
 def dump_all():
+    #print 'Dumping public bodies ...'
+    #q = engine['document'].distinct('authority_name', 'country', 'nuts_code', 'authority_type_name')
+    #store_csv(q, 'public_bodies.csv')
     for filename in [
         'opented-%s.csv',
-        'opented-%s-{{year}}.csv',
-        'opented-%s-{{slug:document_nuts_code}}.csv',
-        'opented-%s-{{slug:document_nuts_code}}-{{year}}.csv',
-        'opented-%s-{{slug:document_country}}.csv',
-        'opented-%s-{{slug:document_country}}-{{year}}.csv',
+        '{{year}}/opented-%s-{{year}}.csv',
+        '{{slug:document_country}}/opented-%s-{{slug:document_nuts_code}}.csv',
+        '{{slug:document_country}}/{{year}}/opented-%s-{{slug:document_nuts_code}}-{{year}}.csv',
+        '{{slug:document_country}}/opented-%s-{{slug:document_country}}.csv',
+        '{{slug:document_country}}/{{year}}/opented-%s-{{slug:document_country}}-{{year}}.csv',
         ]:
         q = documents_query()
+        print [filename % 'documents']
         store_csv(q, filename % 'documents')
         q = awards_query()
+        print [filename % 'awards']
         store_csv(q, filename % 'awards')
 
 if __name__ == '__main__':

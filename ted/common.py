@@ -48,5 +48,12 @@ def as_document(path):
 def get_output_dir():
     return 'site/'
 
+def list_years(**filters):
+    document = get_engine()['document']
+    return [y['year'] for y in document.distinct('year', **filters)]
+
+def list_countries(**filters):
+    document = get_engine()['document']
+    return [c['country'] for c in document.distinct('country', **filters)]
 
 
