@@ -17,9 +17,30 @@
       <p>To find out more about this effort, visit <a href="http://opented.org/">OpenTED.org</a>.</p>
     </div>
     <div class="span6">
-      {% for year in years %}
-      {% endfor %}
-    <div>
+      <p>
+        <strong>All data:</strong> {{data('opented-%(type)s.csv')}}
+      </p>
+      <p>
+      <strong>Data by year:</strong>
+      </p>
+      <ul>
+        {% for year in years %}
+        <li>{{year}}: {{data('%(year)s/opented-%(type)s-%(year)s.csv', year=year)}}</li>
+        {% endfor %}
+      </ul>
+      <p>
+        <strong>Data by country:</strong>
+        {% for country in countries %}
+          <a href="/country/{{country}}.html">{{country}}</a> {% if not loop.last %}&middot;{% endif %}
+        {% endfor %}
+      </p>
+      <p>
+        <strong>Supplementary data:</strong>
+      </p>
+      <ul>
+        <li><a href="https://raw.github.com/opented/opented/master/cpvcodes/cpvcodes.csv">Common Procurement Vocabulary (CPV) codesheet</a> (CSV)</li>
+      </ul>
+    </div>
   </div>
 {% endblock %}
 
