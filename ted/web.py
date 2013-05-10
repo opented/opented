@@ -1,39 +1,38 @@
+import os
 from flask import Flask, Markup, render_template
+from jinja2.filters import do_filesizeformat
 from dataset.util import slug
-from common import get_engine, list_years, list_countries
+from common import get_engine, list_years, list_countries, get_output_dir
 
 app = Flask(__name__)
 engine = get_engine()
 document = engine['document']
 awards = engine['awards']
 
+
+def file_size(url):
+    size = float(os.path.getsize(os.path.join(get_output_dir(), 'data', url)))
+    for x in ['bytes','KB','MB','GB','TB']:
+        if size < 1024.0:
+            return "%3.1f %s" % (size, x)
+        size /= 1024.0
+
 def data_link(pattern, **values):
     vf = {'type': 'documents'}
     for k, v in values.items():
         vf[k] = slug(unicode(v))
     doc_url = pattern % vf
+    doc_size = file_size(doc_url)
     vf['type'] = 'awards'
     aw_url = pattern % vf
-    return Markup('<a href="/data/'+doc_url+'">All documents</a> &middot; <a href="/data/'+aw_url+'">Contract awards</a> (CSV)')
+    aw_size = file_size(aw_url)
+    return Markup('<a href="/data/'+doc_url+'">All documents</a> (CSV, '+doc_size+') &middot; <a href="/data/'+aw_url+'">Contract awards</a> (CSV, '+aw_size+')')
 
 @app.context_processor
 def set_template_globals():
     return {
         'data': data_link
         }
-
-# Permuations to export: 
-#
-# * All documents
-# * All contracts
-# * All documents by year
-# * All contracts by year 
-# * All documents by year and country
-# * All contracts by year and country
-# * All contracts by year and authority
-# * All contracts by year and authority
-# * All contracts by year and top-level CPV
-# * All contracts by year and top-level CPV
 
 @app.route("/country/<code>.html")
 def country(code):
