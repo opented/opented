@@ -1,6 +1,10 @@
-from flask import Flask
-app = Flask(__name__)
+from flask import Flask, render_template
+from common import get_engine
 
+app = Flask(__name__)
+engine = get_engine()
+document = engine['document']
+awards = engine['awards']
 
 # Permuations to export: 
 #
@@ -15,9 +19,13 @@ app = Flask(__name__)
 # * All contracts by year and top-level CPV
 # * All contracts by year and top-level CPV
 
+
 @app.route("/")
-def hello():
-    return "Hello World!"
+def index():
+    years = document.distinct('year')
+    countries = document.distinct('country')
+    return render_template('index.html',
+            years=years, countries=countries)
 
 if __name__ == "__main__":
     app.run()

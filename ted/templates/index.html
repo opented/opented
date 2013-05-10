@@ -1,0 +1,26 @@
+{%extends "layout.html" %}
+
+{% block title %}
+  European procurement data
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="span6">
+      <p>
+      OpenTED releases updated data extracts from the European procurement database, <a href="http://ted.europa.eu/TED/main/HomePage.do">Tenders
+        Electronic Daily (TED)</a>. The data on this site is machine-readable CSV, ready for 
+        examination by journalists and others. Since the EU Publications Office does not make 
+        such a form of the data available, the content has been generated through an automated
+        scraper script, which downloads and analyses the TED web site.
+      </p>
+      <p>To find out more about this effort, visit <a href="http://opented.org/">OpenTED.org</a>.</p>
+    </div>
+    <div class="span6">
+      {% for year in years %}
+      {% endfor %}
+    <div>
+  </div>
+{% endblock %}
+
+
