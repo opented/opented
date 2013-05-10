@@ -4,7 +4,7 @@ from pprint import pprint
 NUMRE = '(-|[\., \d]*(,\d{1,2})?)'
 CURRE = '(HT )?(?P<cur>[A-Z]{3})\.?'
 
-VALUE_LINE_RE = re.compile('^(Value|Amount|Value of the contract):?([^\d]*|.*- )?(?P<val>' + \
+VALUE_LINE_RE = re.compile('^(Value|Amount|Value of the contract|Total price):?([^\d]*|.*- )?(?P<val>' + \
         NUMRE+')[^\d]*(\s*\(.*\)\s*)?'+CURRE, re.M)
 PLAIN_VALUE_RE = re.compile('^(?P<val>'+NUMRE+') '+CURRE+'.*')
 RANGE_LINE_RE = re.compile('^Lowest offer (?P<lo>'+NUMRE+').* (and )?highest ' + \
