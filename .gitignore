@@ -1,4 +1,6 @@
 *.pyc
 *.pyo
 tenders/*
+site/*
 *.DS_Store
+
