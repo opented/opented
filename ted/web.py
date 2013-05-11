@@ -11,7 +11,10 @@ awards = engine['awards']
 
 
 def file_size(url):
-    size = float(os.path.getsize(os.path.join(get_output_dir(), 'data', url)))
+    try:
+        size = float(os.path.getsize(os.path.join(get_output_dir(), 'data', url)))
+    except OSError:
+        size = 0
     for x in ['bytes','KB','MB','GB','TB']:
         if size < 1024.0:
             return "%3.1f %s" % (size, x)
@@ -37,7 +40,8 @@ def set_template_globals():
 @app.route("/country/<code>.html")
 def country(code):
     return render_template('country.html',
-            years=list_years())
+            years=list_years(country=code),
+            country=code)
 
 @app.route("/index.html")
 def index():

@@ -1,0 +1,30 @@
+{%extends "layout.html" %}
+
+{% block title %}
+  {{country}}
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="span6">
+      <p>This page shows EU procurement data related to the country code {{country}}.
+      </p>
+      <p>To see all countries, <a href='/index.html'>go back</a></p>
+    </div>
+    <div class="span6">
+      <p>
+        <strong>All data:</strong> {{data('opented-%(type)s-%(country)s.csv', country=country)}}
+      </p>
+      <p>
+      <strong>Data by year:</strong>
+      </p>
+      <ul>
+        {% for year in years %}
+        <li>{{year}}: {{data('%(year)s/opented-%(type)s-%(year)s.csv', year=year)}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}
+
+
