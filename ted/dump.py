@@ -37,8 +37,8 @@ def dump_all():
     for filename in [
         'opented-%s.csv',
         '{{year}}/opented-%s-{{year}}.csv',
-        '{{slug:document_country}}/opented-%s-{{slug:document_nuts_code}}.csv',
-        '{{slug:document_country}}/{{year}}/opented-%s-{{slug:document_nuts_code}}-{{year}}.csv',
+        #'{{slug:document_country}}/opented-%s-{{slug:document_nuts_code}}.csv',
+        #'{{slug:document_country}}/{{year}}/opented-%s-{{slug:document_nuts_code}}-{{year}}.csv',
         '{{slug:document_country}}/opented-%s-{{slug:document_country}}.csv',
         '{{slug:document_country}}/{{year}}/opented-%s-{{slug:document_country}}-{{year}}.csv',
         ]:
