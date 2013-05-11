@@ -8,6 +8,7 @@ parse:
 freeze:
 	rm -rf site/*
 	cp -R ted/static site
+	mkdir -p site/data
 	pg_dump -f site/data/opented-latest.sql -c -O --inserts opented
 	python ted/dump.py
 	python ted/freeze.py
