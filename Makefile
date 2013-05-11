@@ -5,6 +5,9 @@ fetch:
 parse:
 	python ted/parser.py
 
+transform:
+	psql -f transform.sql opented
+
 freeze:
 	rm -rf site/*
 	mkdir -p site/data

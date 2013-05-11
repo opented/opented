@@ -7,25 +7,37 @@ OpenTED is a project aiming to open up the [EU Tender Electronic Daily](http://w
 
 * Python 2.7
 * Dependencies from `requirements.txt`
+* PostgreSQL
+* s3cmd
 
 
-## Components
+## How to run
 
+The tool has several stages. After installing the dependencies, you need to set up 
+a (postgres) database:
 
-### Scraper
+    $ createdb -E utf-8 opented
 
-The scraper is used to get TED document tabs as raw HTML.
+Next, you can run the entire script using this command: 
 
+    $ make 
 
-#### Command line usage
+Since this will take several days, you may more often want to run the different 
+stages separately, e.g. download: 
 
-	python opented/scraper.py [-d] DOC_ID [TAB_ID]
+    $ make fetch 
 
-Example:
+Or processing: 
 
-	python opented/scraper.py 414837-2012
+    $ make parse transform
 
-See `python opented/scraper.py -h` for details.
+Finally, generating the output files and uploading them to S3: 
+
+    $ make freeze upload 
+
+For the final step to work, you first need to configure s3cmd like this: 
+
+    $ s3cmd -c s3cmd.config --configure 
 
 
 ## License
