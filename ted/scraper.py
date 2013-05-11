@@ -3,9 +3,7 @@ import os
 from itertools import count
 
 from threaded import threaded
-from common import tender_path
-
-FAILURES = 50
+from common import tender_path, FAILURES
 
 session = requests.Session()
 

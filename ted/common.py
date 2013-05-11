@@ -4,6 +4,8 @@ from lxml import html
 
 import dataset
 
+FAILURES = 5000
+
 def get_engine():
     if "DATABASE" in os.environ:
         db_addr = os.environ['DATABASE']
@@ -30,11 +32,16 @@ def generate_paths(year, num):
 
 def traverse_local():
     for year in range(2009, 2014):
+        fails = FAILURES
         for num in count(1):
             paths = generate_paths(year, num)
             if paths is None:
-                break
-            yield paths
+                fails -= 1
+                if fails <= 0:
+                    break
+            if paths is not None:
+                fails = FAILURES
+                yield paths
 
 def as_document(path):
     try:
