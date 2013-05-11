@@ -13,14 +13,14 @@
     </div>
     <div class="span6">
       <p>
-        <strong>All data:</strong> {{data('opented-%(type)s-%(country)s.csv', country=country)}}
+        <strong>All data:</strong> {{data('%(country)s/opented-%(type)s-%(country)s.csv', country=country)}}
       </p>
       <p>
       <strong>Data by year:</strong>
       </p>
       <ul>
         {% for year in years %}
-        <li>{{year}}: {{data('%(year)s/opented-%(type)s-%(year)s.csv', year=year)}}</li>
+        <li>{{year}}: {{data('%(country)s/%(year)s/opented-%(type)s-%(year)s.csv', year=year)}}</li>
         {% endfor %}
       </ul>
     </div>
