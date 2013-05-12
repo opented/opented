@@ -20,7 +20,7 @@
       </p>
       <ul>
         {% for year in years %}
-        <li>{{year}}: {{data('%(country)s/%(year)s/opented-%(type)s-%(year)s.csv', year=year)}}</li>
+        <li>{{year}}: {{data('%(country)s/%(year)s/opented-%(type)s-%(year)s.csv', year=year, country=country)}}</li>
         {% endfor %}
       </ul>
     </div>
