@@ -17,7 +17,7 @@ freeze:
 	python ted/freeze.py
 
 upload:
-	s3cmd sync -c s3cmd.config --acl-public -M site/* s3://opented.pudo.org
+	s3cmd sync -c s3cmd.config --acl-public --guess-mime-type site/* s3://opented.pudo.org
 
 all: fetch parse freeze upload
 
