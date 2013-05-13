@@ -1,4 +1,5 @@
 import logging
+from time import time
 from pprint import pprint
 from lxml import html
 from common import traverse_local, as_document, generate_paths
@@ -34,51 +35,52 @@ def parse_current_language(path):
 
 def parse_tender(engine, paths):
     #print "PATHS ", paths
+    begin = time()
+    try:
+        engine.begin()
 
-    lang_doc, data = parse_current_language(paths[0])
-    data.update(parse_data(paths[3]))
-    if not 'uri' in data:
-        #pprint(data)
-        return
+        lang_doc, data = parse_current_language(paths[0])
+        data.update(parse_data(paths[3]))
+        if not 'uri' in data:
+            #pprint(data)
+            return
 
-    if 'award' in data['heading'].lower():
-        #try:
-        extract_awards(engine, data['uri'], lang_doc)
-        #except Exception, e:
-        #    print [e]
+        if 'award' in data['heading'].lower():
+            extract_awards(engine, data['uri'], lang_doc)
 
-    print data['uri']
+        # find out what this is good for :)
+        if 'cpv_original_code' in data:
+            del data['cpv_original_code']
 
-    # find out what this is good for :)
-    if 'cpv_original_code' in data:
-        del data['cpv_original_code']
+        document_cpv = engine['document_cpv']
+        document_cpv.delete(document_uri=data['uri'])
 
-    for cpv_link in data.pop('cpv_code'):
-        cpv_code, cpv_title = cpv_link.split(' - ')
-        engine['document_cpv'].upsert({
-            'document_uri': data['uri'],
-            'code': cpv_code,
-            'title': cpv_title }, ['document_uri', 'code'])
-    engine['document'].upsert(data, ['uri'])
-    #extract_plain(engine, data['uri'], lang_doc)
-    #print data['uri']
+        for cpv_link in data.pop('cpv_code'):
+            cpv_code, cpv_title = cpv_link.split(' - ')
+            engine['document_cpv'].insert({
+                'document_uri': data['uri'],
+                'code': cpv_code,
+                'title': cpv_title })
+        engine['document'].upsert(data, ['uri'])
+        #extract_plain(engine, data['uri'], lang_doc)
+
+        engine.commit()
+        duration = (time() - begin)*1000
+        print [data['uri'], duration]
+    except Exception, e:
+        log.exception(e)
+        engine.rollback()
 
 
 def parse(engine):
     for paths in traverse_local():
-        try:
-            parse_tender(engine, paths)
-        except Exception, e:
-            log.exception(e)
+        parse_tender(engine, paths)
 
 
 def parse_threaded(engine):
     def fnc(p):
-        try:
-            parse_tender(engine, p)
-        except Exception, e:
-            log.exception(e)
-    threaded(traverse_local(), fnc, num_threads=5)
+        parse_tender(engine, p)
+    threaded(traverse_local(), fnc, num_threads=10)
 
 
 if __name__ == '__main__':
@@ -95,6 +97,6 @@ if __name__ == '__main__':
         if paths is not None:
             parse_tender(engine, paths)
     else:
-        #parse_threaded(engine)
-        parse(engine)
+        parse_threaded(engine)
+        #parse(engine)
 
