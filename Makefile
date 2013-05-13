@@ -3,6 +3,8 @@ fetch:
 	python ted/scraper.py
 
 parse:
+	dropdb opented
+	createdb -E utf-8 opented
 	python ted/parser.py
 
 transform:

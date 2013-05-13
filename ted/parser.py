@@ -53,7 +53,7 @@ def parse_tender(engine, paths):
             del data['cpv_original_code']
 
         document_cpv = engine['document_cpv']
-        document_cpv.delete(document_uri=data['uri'])
+        #document_cpv.delete(document_uri=data['uri'])
 
         for cpv_link in data.pop('cpv_code'):
             cpv_code, cpv_title = cpv_link.split(' - ')
@@ -61,7 +61,8 @@ def parse_tender(engine, paths):
                 'document_uri': data['uri'],
                 'code': cpv_code,
                 'title': cpv_title })
-        engine['document'].upsert(data, ['uri'])
+        #engine['document'].upsert(data, ['uri'])
+        engine['document'].insert(data)
         #extract_plain(engine, data['uri'], lang_doc)
 
         engine.commit()
