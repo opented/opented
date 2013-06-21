@@ -9,7 +9,7 @@ from common import tender_path, FAILURES
 session = requests.Session()
 
 
-def init():
+def make_session():
     global session
     session = requests.Session()
     session.get('http://www.ted.europa.eu/TED/browse/browseByBO.do')
@@ -34,7 +34,7 @@ def get_entry(year, num):
             if 'invalidUDLLink.do' in res.headers.get('location'):
                 return False
             else:
-                init()
+                make_session()
                 return get_entry(year, num)
         if res.status_code == 200:
             fh = open(path, 'wb')
@@ -60,6 +60,13 @@ def all_years():
 
 
 if __name__ == '__main__':
-    init()
-    threaded(range(2009, 2014), all_entries)
-    #all_years()
+    make_session()
+
+    p = OptionParser()
+    p.add_option("--year", dest="year", type=int, default=None)
+
+    options, args = p.parse_args()
+    if options.year:
+        all_entries(options.year)
+    else:
+        threaded(range(2009, 2014), all_entries)
