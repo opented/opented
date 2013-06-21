@@ -6,7 +6,7 @@ from optparse import OptionParser
 from threaded import threaded
 from common import tender_path, FAILURES
 
-session = None
+session = requests.Session()
 
 
 def make_session():
@@ -16,8 +16,6 @@ def make_session():
 
 
 def get(uri, tab):
-    if session is None:
-        make_session()
     return session.get('http://www.ted.europa.eu/udl',
                        params={'uri': uri, 'tabId': tab},
                        allow_redirects=False,
@@ -62,6 +60,8 @@ def all_years():
 
 
 if __name__ == '__main__':
+    make_session()
+
     p = OptionParser()
     p.add_option("--year", dest="year", type=int, default=None)
 

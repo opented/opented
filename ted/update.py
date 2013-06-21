@@ -3,7 +3,7 @@ from datetime import datetime
 
 from common import get_engine, traverse_local
 from threaded import threaded
-from scraper import all_entries
+from scraper import all_entries, make_session
 from parser import parse_tender
 
 
@@ -21,6 +21,7 @@ def update():
     offsets = [int(num)] + ([0] * len(years))
     print "CONTINUING", zip(years, offsets)
     for year, offset in zip(years, offsets):
+        make_session()
         all_entries(year, offset=offset)
         for paths in traverse_local([year], offset):
             parse_tender(engine, paths)
