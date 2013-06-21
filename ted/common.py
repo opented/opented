@@ -6,6 +6,7 @@ import dataset
 
 FAILURES = 5000
 
+
 def get_engine():
     if "DATABASE" in os.environ:
         db_addr = os.environ['DATABASE']
@@ -22,6 +23,7 @@ def tender_path(year, num, tab, create=True):
         os.makedirs(dirname)
     return path
 
+
 def generate_paths(year, num):
     path = tender_path(year, num, 0, create=False)
     if not os.path.isfile(path):
@@ -30,10 +32,11 @@ def generate_paths(year, num):
     pattern = dir_base + '/tab_%s.html'
     return [pattern % i for i in range(0, 4)]
 
-def traverse_local():
-    for year in range(2009, 2014):
+
+def traverse_local(years=range(2009, 2014), offset=1):
+    for year in years:
         fails = FAILURES
-        for num in count(1):
+        for num in count(offset):
             paths = generate_paths(year, num)
             if paths is None:
                 fails -= 1
@@ -42,6 +45,7 @@ def traverse_local():
             if paths is not None:
                 fails = FAILURES
                 yield paths
+
 
 def as_document(path):
     try:
@@ -52,12 +56,15 @@ def as_document(path):
     except IOError:
         return None
 
+
 def get_output_dir():
     return 'site/'
+
 
 def list_years(**filters):
     document = get_engine()['document']
     return [y['year'] for y in document.distinct('year', **filters)]
+
 
 def list_countries(**filters):
     document = get_engine()['document']
