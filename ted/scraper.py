@@ -12,7 +12,10 @@ session = requests.Session()
 def make_session():
     global session
     session = requests.Session()
-    session.get('http://www.ted.europa.eu/TED/browse/browseByBO.do')
+    session.get('http://www.ted.europa.eu/udl',
+                params={'uri': 'TED:NOTICE:204620-2013:TEXT:EN:HTML', 'tabId': 3},
+                allow_redirects=True,
+                cookies={'lg': 'en'})
 
 
 def get(uri, tab):
