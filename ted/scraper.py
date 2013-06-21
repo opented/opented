@@ -2,21 +2,25 @@ import requests
 import os
 from itertools import count
 
+from optparse import OptionParser
 from threaded import threaded
 from common import tender_path, FAILURES
 
 session = requests.Session()
+
 
 def init():
     global session
     session = requests.Session()
     session.get('http://www.ted.europa.eu/TED/browse/browseByBO.do')
 
+
 def get(uri, tab):
     return session.get('http://www.ted.europa.eu/udl',
-            params={'uri': uri, 'tabId': tab},
-            allow_redirects=False,
-            cookies={'lg': 'en'})
+                       params={'uri': uri, 'tabId': tab},
+                       allow_redirects=False,
+                       cookies={'lg': 'en'})
+
 
 def get_entry(year, num):
     uri = 'TED:NOTICE:%s-%s:DATA:EN:HTML' % (num, year)
@@ -38,6 +42,7 @@ def get_entry(year, num):
             fh.close()
     return True
 
+
 def all_entries(year):
     failed = 0
     for num in count(1):
@@ -48,16 +53,13 @@ def all_entries(year):
         if failed > FAILURES:
             break
 
+
 def all_years():
     for year in range(2009, 2014):
         all_entries(year)
+
 
 if __name__ == '__main__':
     init()
     threaded(range(2009, 2014), all_entries)
     #all_years()
-
-
-
-
-

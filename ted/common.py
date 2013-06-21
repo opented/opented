@@ -62,5 +62,3 @@ def list_years(**filters):
 def list_countries(**filters):
     document = get_engine()['document']
     return [c['country'] for c in document.distinct('country', **filters)]
-
-
