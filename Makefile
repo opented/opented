@@ -1,25 +1,9 @@
+.PHONY: build
 
-fetch:
-	python ted/scraper.py
+all: build upload
 
-parse:
-	dropdb opented
-	createdb -E utf-8 opented
-	python ted/parser.py
-
-transform:
-	psql -f transform.sql opented
-
-freeze:
-	rm -rf site/*
-	mkdir -p site/data
-	cp -R ted/static site
-	pg_dump -f site/data/opented-latest.sql -c -O --inserts opented
-	python ted/dump.py
-	python ted/freeze.py
+build:
+	python opented/manage.py freeze
 
 upload:
-	s3cmd sync -c s3cmd.config --acl-public --guess-mime-type site/* s3://opented.pudo.org
-
-all: fetch parse freeze upload
-
+	#aws s3 sync --cache-control 84600 --acl public-read --exclude 'static/.webassets-cache/*' --delete build/ s3://www.offenerhaushalt.de/

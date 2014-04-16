@@ -4,4 +4,4 @@ tenders/*
 site/*
 s3cmd.config
 *.DS_Store
-
+old/*
