@@ -1,0 +1,203 @@
+{%extends "layout.html" %}
+
+{% block title %}
+  European procurement data
+{% endblock %}
+
+{% block content %}
+  <div class="col-md-8 page-content">
+    <h2 id="welcome">Welcome</h2>
+
+    <p class="teaser">
+    Welcome to OpenTED, an initiative that aims to make information from
+    the joint European procurement system more easily accessible to
+    journalists and researchers. The project aims to answer such questions
+    as: Who are the biggest suppliers to a local government? What goods
+    and servies are the public bodies in a particular country purchasing?
+    Are anti-corruption procedures being followed correctly?
+    </p>
+
+    <p>Follow <a href="https://twitter.com/opented"><i class="fa fa-twitter"></i> OpenTED</a>
+    for our latest updates.</p>
+
+    <h2 id="what-is-ted">What is TED?</h2>
+
+    <p>Each year the public sector across countries contracts private
+    providers to serve the public. From local municipalities to publicly
+    owned utility companies the public engages companies to clean
+    schools, to run servage operations and to build bridges. According
+    to <a href="http://www.oecd-ilibrary.org/sites/gov_glance-2011-en/09/01/gix-40-01.html?contentType=/ns/StatisticalPublication,/ns/Chapter&amp;itemId=/content/chapter/gov_glance-2011-46-en&amp;containerItemId=/content/serial/22214399&amp;accessItemIds=&amp;mimeType=text/html">OECD estimates</a> government spending on private
+    sector procurement ranges from 5 per cent of GDP in Mexico to 26 per
+    cent of GDP in the Netherlands, with an OECD average of 17 per cent
+    of GDP.</p>
+
+    <p><strong>Access to public procurement data</strong></p>
+    <p>According to the EU rules on public procurements all contracts
+    valued above €200,000 are mandated to be published as a public procurement
+    contest. Since 2006 EU has published procurement statements on +700,000
+    tenders at the <a title="TEd-register website" href="http://ted.europa.eu/">
+    Tender Electronic Daily (TED)</a>.</p>
+
+    <p>TED is the official online version of the
+    <a href="http://en.wikipedia.org/wiki/Official_Journal_of_the_European_Union">
+    Supplement to the Official Journal of the European Union</a>, which
+    publishes all public procurement made in member states, which falls
+    under the minimum amount of procurement. Depending on the type of
+    contract (from service to works) public owned agencies are mandated
+    to publish all tenders above minimum amounts stipulated in the EU
+    regulation. The TED-register includes data on awarded procurement
+    contracts from publicly owned entities – such as EU agencies, governments,
+    provinces, municipalities and publicly owned utility companies.</p>
+
+    <p>At OpenTED we believe that the data from the TED-register can be
+    a valuable source for journalists, NGOs, analysts and citizens for
+    getting information on everything from large scale trends to local
+    municipal developments.</p>
+
+    <h2 id="get-the-data">Get the data</h2>
+
+    <p>TED data is shared by the EU Publications Office in a XML format.
+    While that format is well-suited to automated processing, it doesn't
+    easily lend itself to analysis by journalists. We therefore
+    provide the data as CSV (comma-separated values) files,
+    which can be read and analysed by common spreadsheet programs like
+    Excel or LibreOffice.</p>
+
+    <p>As TED is a very large database, extracts are divided into slices
+    by country and year. This should make the data small enough to be
+    handled in desktop applications. Further, there are two types of
+    extracts:</p>
+
+    <ul>
+      <li><strong>Document extracts</strong> contain all activties
+      published in TED, including tender announcements, metadata on
+      contract awards etc. Use this data if you want to get an
+      overview of the activities in European procurement.</li>
+      <li><strong>Contracts extracts</strong> contain only the subset
+      of TED activities which relates to contract awards. This data
+      includes the supplier names and contract amounts for contracts
+      which have been awarded to a specific company.</li>
+    </ul>
+
+    <div class="pull-right">
+      <select id="select-section" class="form-control">
+        {% for table in tables %}
+          <option value="{{table.section}}">
+            {{table.country_common}} ({{table.documents | format_num}})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <br/><br/>
+
+    <div class="clearfix"></div>
+
+    {% for table in tables %}
+      <div class="section" id="section-{{table.section}}">
+        <table class="table table-condensed">
+          <thead>
+            <tr>
+              <th width="25%">{{table.country_common}}</th>
+              <th width="25%">Documents</th>
+              <th width="25%">Contract awards</th>
+              <th width="25%" class="numeric">Documents</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for row in table.rows %}
+            <tr>
+              <td>{{row.year}}</td>
+              <td><a href="{{row.documents_url}}"><i class="fa fa-download"></i> CSV</a></td>
+              <td><a href="{{row.contracts_url}}"><i class="fa fa-download"></i> CSV</a></td>
+              <td class="numeric">{{row.documents | format_num}}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+
+    <p>Last update: <strong>{{last_update}}</strong>. The Publications Office of the European Union
+    <a href="http://ted.europa.eu/TED/misc/legalNotice.do">claims copyright on the
+    TED data</a>. Resources made
+    available on this website are subject to those terms, but no additional
+    copyright claim is made by the authors of this site.</p>
+
+    <h2 id="contribute">Contribute</h2>
+
+    <h2 id="about-us">About us</h2>
+
+    <p>OpenTED is a loose association of independent journalists, developers and
+    researchers. Our goal is to:</p>
+    <ul>
+      <li>collect and clean procurement data</li>
+      <li>publish procurement data as downloads, linked data and APIs</li>
+      <li>provide journalists and NGOs with training on how to investigate stories hidden in public procurement data</li>
+    </ul>
+    <p>The following people have contributed to the OpenTED project through
+    advocacy, software development or data analysis:</p>
+    <ul>
+      <li>
+        Anders Pedersen &middot; <a href="https://twitter.com/anpe"><i class="fa fa-twitter"></i> anpe</a>
+      </li>
+      <li>
+        Friedrich Lindenberg &middot; <a href="https://twitter.com/pudo"><i class="fa fa-twitter"></i> pudo</a> &middot;
+          <a href="https://github.com/pudo"><i class="fa fa-github"></i> pudo</a>
+      </li>
+      <li>
+        Joost Cassee &middot; <a href="https://twitter.com/jcassee"><i class="fa fa-twitter"></i> jcassee</a>
+      </li>
+      <li>
+        Martin Keegan &middot; <a href="https://twitter.com/mk270"><i class="fa fa-twitter"></i> mk270</a> &middot;
+          <a href="https://github.com/mk270"><i class="fa fa-github"></i> mk270</a>
+      </li>
+      <li>
+        Noah Veltman &middot; <a href="https://twitter.com/veltman"><i class="fa fa-twitter"></i> veltman</a> &middot;
+          <a href="https://github.com/veltman"><i class="fa fa-github"></i> veltman</a>
+      </li>
+      <li>
+        Stefan Wehrmeyer &middot; <a href="https://twitter.com/stefanwehrmeyer"><i class="fa fa-twitter"></i> stefanwehrmeyer</a> &middot;
+          <a href="https://github.com/stefanw"><i class="fa fa-github"></i> stefanw</a>
+      </li>
+    </ul>
+    <p>Support &mdash; mostly in-kind donations and support for hackdays &mdash; has also been given by
+    the following organisations:</p>
+    <ul>
+      <li><a href="http://okfn.org">Open Knowledge Foundation</a></li>
+      <li><a href="http://opennews.org">Knight-Mozilla OpenNews</a></li>
+      <li><a href="http://journalismfund.eu">Journalismfund.eu</a></li>
+    </ul>
+    <p>Finally, our thanks go to the staff of the
+    <a href="http://publications.europa.eu/index_en.htm">EU Publications Office</a>,
+    which has actively supported our re-use of this data by making XML data dumps
+    available.</p>
+  </div>
+  <div class="col-md-4 menu-content">
+    <div class="affix">
+      <ul class="nav">
+        <li><a href="#welcome">Welcome</a></li>
+        <li><a href="#what-is-ted">What is TED?</a></li>
+        <li><a href="#what-we-do">What do we do?</a></li>
+        <li><a href="#get-the-data">Get the data</a></li>
+        <li><a href="#dictionary">What's in the data?</a></li>
+        <li><a href="#contribute">Contribute</a></li>
+        <li><a href="#related">Related work</a></li>
+        <li><a href="#about-us">About us</a></li>
+      </ul>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block js %}
+  <script>
+    $(function() {
+      var $select = $('#select-section'),
+          $sections = $('.section');
+      $select.change(function(e) {
+        $sections.hide();
+        $('#section-' + $select.val()).show();
+      });
+    });
+  </script>
+{% endblock %}
