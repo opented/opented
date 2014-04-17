@@ -6,7 +6,7 @@ from monnet.ted.util import engine, documents_table, contracts_table, cpvs_table
 
 documents = documents_table.table.alias('document')
 cpvs = cpvs_table.table.alias('cpv')
-contracts = contracts_table.table.alias('awards')
+contracts = contracts_table.table.alias('contract')
 
 
 def filter_by(year, country):
