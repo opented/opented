@@ -15,8 +15,6 @@ from opented.util import get_output_dir, stream_csv
 @app.route("/data/<country>/ted-documents-<country_>.csv")
 @app.route("/data/<country>/ted-documents-<country_>-<year>.csv")
 def documents(year=None, country=None, country_=None):
-    #print ['documents', year, country]
-    return 'banana'
     q = documents_query(year=year, country=country)
     return Response(stream_csv(q), mimetype='text/csv')
 
@@ -26,8 +24,6 @@ def documents(year=None, country=None, country_=None):
 @app.route("/data/<country>/ted-contracts-<country_>.csv")
 @app.route("/data/<country>/ted-contracts-<country_>-<year>.csv")
 def contracts(year=None, country=None, country_=None):
-    #print ['contracts', year, country]
-    return 'banana'
     q = contracts_query(year=year, country=country)
     return Response(stream_csv(q), mimetype='text/csv')
 
@@ -64,9 +60,7 @@ def index():
                 'documents_url': url_for('documents', **args),
                 'contracts_url': url_for('contracts', **args)
                 })
-            #print year
             table['rows'].append(dict(year))
-        #print table
     tables = sorted(tables, key=lambda t: t.get('documents'), reverse=True)
 
     last_update = datetime.utcnow().strftime('%d.%m.%Y')
