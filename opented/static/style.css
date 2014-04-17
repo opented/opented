@@ -29,6 +29,10 @@ a {
   font-weight: bold;
 }
 
+a:hover {
+    text-decoration: none;
+}
+
 .page-content {
   background-color: rgba(255, 255, 255, .8);
   padding-top: 1em;
