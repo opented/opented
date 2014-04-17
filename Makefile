@@ -6,4 +6,4 @@ build:
 	python opented/manage.py freeze
 
 upload:
-	#aws s3 sync --cache-control 84600 --acl public-read --exclude 'static/.webassets-cache/*' --delete build/ s3://www.offenerhaushalt.de/
+	aws s3 sync --cache-control 8460 --acl public-read --exclude 'static/.webassets-cache/*' --delete build/ s3://beta.opented.org

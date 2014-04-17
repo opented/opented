@@ -1,7 +1,9 @@
 *.pyc
 *.pyo
 tenders/*
-site/*
+build/*
 s3cmd.config
 *.DS_Store
 old/*
+*.egg-info
+.env
