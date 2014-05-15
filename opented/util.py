@@ -1,4 +1,5 @@
 import os
+import csv
 from unicodecsv import writer
 from cStringIO import StringIO
 
@@ -34,7 +35,7 @@ def data_link(pattern, **values):
 
 def csv_write_line(line):
     sio = StringIO()
-    w = writer(sio, encoding='utf-8')
+    w = writer(sio, encoding='utf-8', quoting=csv.QUOTE_ALL)
     w.writerow(line)
     return sio.getvalue()
 
